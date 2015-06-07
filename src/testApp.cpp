@@ -1,4 +1,5 @@
 #include "testApp.h"
+#include "ofAppGlutWindow.h"
 
 /* Note on OS X, you must have this in the Run Script Build Phase of your project. 
 where the first path ../../../addons/ofxLeapMotion/ is the path to the ofxLeapMotion addon. 
@@ -16,6 +17,8 @@ deque< pair<float, float> >::iterator iter;
 
 int threshold_of_pts = 10;
 
+int window_width;
+int window_height;
 
 //--------------------------------------------------------------
 void testApp::setup(){
@@ -45,18 +48,21 @@ void testApp::setup(){
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     //画像データの読込み
     // サーバ画像参照
-    /*string image_url_1 = '';
-    string image_url_2 = '';
-    string image_url_3 = '';
+    string image_url_1 = "http://160.16.56.118/hd15/rslt/img/main.jpg";
+    string image_url_2 = "http://160.16.56.118/hd15/rslt/img/1.jpg";
+    string image_url_3 = "http://160.16.56.118/hd15/rslt/img/2.jpg";
     myImage.loadImage(image_url_1);
     myImage_2.loadImage(image_url_2);
-    myImage_3.loadImage(image_url_3);*/
+    myImage_3.loadImage(image_url_3);
     
     // ローカル画像参照
     
-    myImage.loadImage("komine.jpg");
+    /*myImage.loadImage("komine.jpg");
     myImage_2.loadImage("komine2.jpg");
-    myImage_3.loadImage("komine3.jpg");
+    myImage_3.loadImage("komine3.jpg");*/
+    
+    window_width = ofGetWidth();  // アプリウィンドウの横ピクセル数を返します．
+    window_height = ofGetHeight(); // アプリウィンドウの縦ピクセル数を返します
     
 }
 
@@ -87,20 +93,21 @@ void testApp::update(){
         for(int i = 0; i < simpleHands.size(); i++){
         
             //for(int j = 0; j < simpleHands[i].fingers.size(); j++){
-            //for(int j = 0; j < 2; j++){
                 int id = simpleHands[i].fingers[1].id;
                 
-                ofPolyline & polyline = fingerTrails[id];
+                //ofPolyline & polyline = fingerTrails[id];
                 /*
                  * Get the position of the finger.
                  */
                 //pt.push(simpleHands[i].fingers[1].pos);
-                pt = simpleHands[i].fingers[1].pos;
-                
+            pt = simpleHands[i].fingers[1].pos;
+            //pt.x -= 20;
+            //pt.y -= 100;
+            
                 //if the distance between the last point and the current point is too big - lets clear the line 
                 //this stops us connecting to an old drawing
                 /*if( polyline.size() && (pt-polyline[polyline.size()-1] ).length() > 50 ){
-                    polyline.clear(); 
+                    polyline.clear();
                 }*/
                 
                 //add our point to our trail
@@ -173,6 +180,12 @@ void testApp::draw(){
     unsigned char * pixels_2 = myImage_2.getPixels();
     unsigned char * pixels_3 = myImage_3.getPixels();
 
+    //画像の幅と高さを所得
+    int w = myImage.width;
+    int h = myImage.height;
+    
+    int offset_x = (window_width - w)/2;
+    int offset_y = (window_height - h)/2;
     
     // Mask
     int width_of_mask = 960;
@@ -182,9 +195,6 @@ void testApp::draw(){
         // すべてのピクセルを黒に初期化する
         mask[i] = 0;
     }
-    //画像の幅と高さを所得
-    int w = myImage.width;
-    int h = myImage.height;
     
     // 指の座標を取得
     /*x.push_back(pt.x);
@@ -311,7 +321,7 @@ void testApp::draw(){
                  //for( iter = pts.begin(); iter != pts.end(); iter++ ){
                     
                     // 2枚目の写真描写
-                    int pt_of_hand = width_of_mask * j + i;
+                    int pt_of_hand = w * j + i;
                     if (mask[pt_of_hand] == 1) {
                         // 指の座標のmaskピクセルが白の場合
                         int valueR;
@@ -328,7 +338,7 @@ void testApp::draw(){
                             valueB = pixels_3[j*3 * w + i*3+2];
                         }
                         ofSetColor(valueR, valueG, valueB);
-                        ofCircle(i, j, 1);
+                        ofCircle(i+offset_x, j+offset_y, 1);
                     }
                     
                 //}
@@ -340,7 +350,7 @@ void testApp::draw(){
     
     // 画像描写
     ofSetColor(255, 255, 255); //おまじない
-    myImage.draw(100,20);
+    myImage.draw(offset_x,offset_y);
     
     //myImage_2.draw(100, 20);
     
