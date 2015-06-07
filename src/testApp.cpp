@@ -226,21 +226,24 @@ void testApp::draw(){
                 mask[pixels_near_pt_to_be_changed[i]] = 1;
             }
         }
+        
+        // 2枚目の写真描写
+        int pt_of_hand = width * (*iter).second + (*iter).first;
+        if (mask[pt_of_hand] == 1) {
+            // 指の座標のmaskピクセルが白の場合
+            // ２枚目の画像を持ってくる処理
+            int valueR = pixels_2[j*3 * w + i*3];
+            int valueG = pixels_2[j*3 * w + i*3+1];
+            int valueB = pixels_2[j*3 * w + i*3+2];
+            ofSetColor(valueR, valueG, valueB);
+            ofRect(i, j, 1);
+        }
     }
     
     
     
     
     if( leap.isFrameNew() && simpleHands.size() != 0 ){
-        
-        for( iter = pts.begin(); iter != pts.end(); iter++ ){
-            if ((*iter).first != 0) {
-                std::cout << "x座標";
-                cout << (*iter).first << endl;
-                std::cout << "y座標";
-                cout << (*iter).second << endl;
-            }
-        }
         
     
     
