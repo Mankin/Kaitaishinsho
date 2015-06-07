@@ -57,9 +57,11 @@ void testApp::setup(){
     
     // ローカル画像参照
     
-    /*myImage.loadImage("komine.jpg");
+    /*
+    myImage.loadImage("komine.jpg");
     myImage_2.loadImage("komine2.jpg");
-    myImage_3.loadImage("komine3.jpg");*/
+    myImage_3.loadImage("komine3.jpg");
+    */
     
     window_width = ofGetWidth();  // アプリウィンドウの横ピクセル数を返します．
     window_height = ofGetHeight(); // アプリウィンドウの縦ピクセル数を返します
@@ -101,8 +103,9 @@ void testApp::update(){
                  */
                 //pt.push(simpleHands[i].fingers[1].pos);
             pt = simpleHands[i].fingers[1].pos;
+            //std::cout <<
             //pt.x -= 20;
-            //pt.y -= 100;
+            pt.y = -pt.y;
             
                 //if the distance between the last point and the current point is too big - lets clear the line 
                 //this stops us connecting to an old drawing
@@ -189,9 +192,9 @@ void testApp::draw(){
     
     // Mask
     int width_of_mask = 960;
-    int height_of_mask = 638;
+    int height_of_mask = 640;
     unsigned char mask[width_of_mask * height_of_mask];
-    for (int i=0; i < (width_of_mask * height_of_mask) + 1; i++) {
+    for (int i=0; i < (w * h) + 1; i++) {
         // すべてのピクセルを黒に初期化する
         mask[i] = 0;
     }
@@ -201,7 +204,8 @@ void testApp::draw(){
     y.push_back(pt.y);*/
     
     
-    
+    ofSetColor(0, 0, 0);
+    ofCircle(pt.x+offset_x, pt.y+offset_y, 10);
     
     if( leap.isFrameNew() && simpleHands.size() != 0 ){ // 手を検知した時
         
@@ -391,9 +395,9 @@ void testApp::draw(){
     l2.disable();
     
     // 手のオブジェクト入れてるのはこれ！！！
-    for(int i = 0; i < simpleHands.size(); i++){
+    /*for(int i = 0; i < simpleHands.size(); i++){
         simpleHands[i].debugDraw();
-    }
+    }*/
 
 	m1.end();
 	cam.end();
