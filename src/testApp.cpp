@@ -20,8 +20,12 @@ int threshold_of_pts = 10;
 int window_width;
 int window_height;
 
+time_t time_now;
+
 //--------------------------------------------------------------
 void testApp::setup(){
+    
+    time_now = time(NULL);
 
     ofSetFrameRate(60);
     ofSetVerticalSync(true);
@@ -29,17 +33,18 @@ void testApp::setup(){
 
 	leap.open(); 
 
-	l1.setPosition(200, 300, 50);
+	/*
+    l1.setPosition(200, 300, 50);
 	l2.setPosition(-200, -200, 50);
+     */
+    l1.setPosition(0, 0, 50);
+    //l2.setPosition(<#float px#>, <#float py#>, <#float pz#>)
 
-	cam.setOrientation(ofPoint(-20, 0, 0));
+    cam.setOrientation(ofPoint(-20, 0, 0));
 
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_NORMALIZE);
     
-    /*
-     * For Reading Image File.
-     */
     //画面の基本設定
     ofBackground(0,0,0);
     ofEnableSmoothing();
@@ -48,20 +53,23 @@ void testApp::setup(){
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     //画像データの読込み
     // サーバ画像参照
-    string image_url_1 = "http://160.16.56.118/hd15/rslt/img/main.jpg";
+    /*
+    string image_url_1 = "http://160.16.56.118/hd15/rslt/img/main.jpg"; // stringはダブルクォーテーションじゃないとだめ
     string image_url_2 = "http://160.16.56.118/hd15/rslt/img/1.jpg";
     string image_url_3 = "http://160.16.56.118/hd15/rslt/img/2.jpg";
     myImage.loadImage(image_url_1);
     myImage_2.loadImage(image_url_2);
     myImage_3.loadImage(image_url_3);
+    */
     
     // ローカル画像参照
     
-    /*
-    myImage.loadImage("komine.jpg");
-    myImage_2.loadImage("komine2.jpg");
-    myImage_3.loadImage("komine3.jpg");
-    */
+    
+    myImage.loadImage("1.jpg");
+    myImage_2.loadImage("2.jpg");
+    myImage_3.loadImage("3.jpg");
+    titleImage.loadImage("title.jpg");
+    
     
     window_width = ofGetWidth();  // アプリウィンドウの横ピクセル数を返します．
     window_height = ofGetHeight(); // アプリウィンドウの縦ピクセル数を返します
@@ -78,23 +86,17 @@ void testApp::update(){
 	//the leap data is delivered in a threaded callback - so it can be easier to work with this copied hand data
 	
 	//if instead you want to get the data as it comes in then you can inherit ofxLeapMotion and implement the onFrame method. 
-	//there you can work with the frame data directly. 
-
-
-
-    //Option 1: Use the simple ofxLeapMotionSimpleHand - this gives you quick access to fingers and palms. 
+	//there you can work with the frame data directly.
     
     simpleHands = leap.getSimpleHands();
     
-    if( leap.isFrameNew() && simpleHands.size() ){
+    if ( leap.isFrameNew() && simpleHands.size() ){
     
         leap.setMappingX(-230, 230, -ofGetWidth()/2, ofGetWidth()/2);
 		leap.setMappingY(90, 490, -ofGetHeight()/2, ofGetHeight()/2);
         leap.setMappingZ(-150, 150, -200, 200);
     
-        for(int i = 0; i < simpleHands.size(); i++){
-        
-            //for(int j = 0; j < simpleHands[i].fingers.size(); j++){
+        for (int i = 0; i < simpleHands.size(); i++){
                 int id = simpleHands[i].fingers[1].id;
                 
                 //ofPolyline & polyline = fingerTrails[id];
@@ -103,66 +105,10 @@ void testApp::update(){
                  */
                 //pt.push(simpleHands[i].fingers[1].pos);
             pt = simpleHands[i].fingers[1].pos;
-            //std::cout <<
-            //pt.x -= 20;
+            pt.x += 400;
             pt.y = -pt.y;
-            
-                //if the distance between the last point and the current point is too big - lets clear the line 
-                //this stops us connecting to an old drawing
-                /*if( polyline.size() && (pt-polyline[polyline.size()-1] ).length() > 50 ){
-                    polyline.clear();
-                }*/
-                
-                //add our point to our trail
-                //polyline.addVertex(pt);
-                
-                //store fingers seen this frame for drawing
-                //fingersFound.push_back(id);
-            //}
         }
     }
-
-
-    // Option 2: Work with the leap data / sdk directly - gives you access to more properties than the simple approach  
-    // uncomment code below and comment the code above to use this approach. You can also inhereit ofxLeapMotion and get the data directly via the onFrame callback. 
-    
-//	vector <Hand> hands = leap.getLeapHands(); 
-//	if( leap.isFrameNew() && hands.size() ){
-//
-//		//leap returns data in mm - lets set a mapping to our world space. 
-//		//you can get back a mapped point by using ofxLeapMotion::getMappedofPoint with the Leap::Vector that tipPosition returns  
-//		leap.setMappingX(-230, 230, -ofGetWidth()/2, ofGetWidth()/2);
-//		leap.setMappingY(90, 490, -ofGetHeight()/2, ofGetHeight()/2);
-//		leap.setMappingZ(-150, 150, -200, 200);
-//				
-//		for(int i = 0; i < hands.size(); i++){
-//            for(int j = 0; j < hands[i].fingers().count(); j++){
-//				ofPoint pt; 
-//			
-//				const Finger & finger = hands[i].fingers()[j];
-//								
-//				//here we convert the Leap point to an ofPoint - with mapping of coordinates
-//				//if you just want the raw point - use ofxLeapMotion::getofPoint 
-//				pt = leap.getMappedofPoint( finger.tipPosition() );
-//                								
-//				//lets get the correct trail (ofPolyline) out of our map - using the finger id as the key 
-//				ofPolyline & polyline = fingerTrails[finger.id()]; 
-//				
-//				//if the distance between the last point and the current point is too big - lets clear the line 
-//				//this stops us connecting to an old drawing
-//				if( polyline.size() && (pt-polyline[polyline.size()-1] ).length() > 50 ){
-//					polyline.clear(); 
-//				}
-//				
-//				//add our point to our trail
-//				polyline.addVertex(pt); 
-//				
-//				//store fingers seen this frame for drawing
-//				fingersFound.push_back(finger.id());
-//			}
-//		}	
-//	}
-//    
 
 	//IMPORTANT! - tell ofxLeapMotion that the frame is no longer new. 
 	leap.markFrameAsOld();	
@@ -171,24 +117,37 @@ void testApp::update(){
 //--------------------------------------------------------------
 void testApp::draw(){
     
-    /*
-     * For Reading Image File.
-     */
-    //色の設定
-    ofSetColor(255, 255, 255);
-    //読み込んだ画像データを画面に描画
-
-    //画像データのビットマップ情報を配列に格納
-    unsigned char * pixels = myImage.getPixels();
-    unsigned char * pixels_2 = myImage_2.getPixels();
-    unsigned char * pixels_3 = myImage_3.getPixels();
-
     //画像の幅と高さを所得
     int w = myImage.width;
     int h = myImage.height;
     
     int offset_x = (window_width - w)/2;
     int offset_y = (window_height - h)/2;
+    
+    
+    // タイトルイメージ用
+    int t_w = titleImage.width;
+    int t_h = titleImage.height;
+    
+    int t_offset_x = (window_width - t_w)/2;
+    int t_offset_y = (window_height - t_h)/2;
+    
+    ofSetColor(255, 255, 255);
+    
+    time_t now = time(NULL);
+    int time_d = now - time_now;
+    if (time_d < 5) {
+        //titleImage.draw(t_offset_x, t_offset_y-150);
+        titleImage.draw(0, 0, window_width, window_height);
+    }
+    
+    
+    //読み込んだ画像データを画面に描画
+
+    //画像データのビットマップ情報を配列に格納
+    unsigned char * pixels = myImage.getPixels();
+    unsigned char * pixels_2 = myImage_2.getPixels();
+    unsigned char * pixels_3 = myImage_3.getPixels();
     
     // Mask
     int width_of_mask = 960;
@@ -200,12 +159,11 @@ void testApp::draw(){
     }
     
     // 指の座標を取得
-    /*x.push_back(pt.x);
-    y.push_back(pt.y);*/
-    
-    
     ofSetColor(0, 0, 0);
     ofCircle(pt.x+offset_x, pt.y+offset_y, 10);
+    
+    ofSetColor(255, 255, 255);
+    
     
     if( leap.isFrameNew() && simpleHands.size() != 0 ){ // 手を検知した時
         
@@ -360,7 +318,7 @@ void testApp::draw(){
     
     
     
-	ofDisableLighting();
+	ofEnableLighting();
     ofBackgroundGradient(ofColor(90, 90, 90), ofColor(30, 30, 30),  OF_GRADIENT_BAR);
 	
 	ofSetColor(200);
