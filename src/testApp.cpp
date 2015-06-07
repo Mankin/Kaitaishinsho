@@ -17,9 +17,6 @@ deque< pair<float, float> >::iterator iter;
 int threshold_of_pts = 10;
 
 
-pair<float, float> additional_pts_pair;
-
-
 //--------------------------------------------------------------
 void testApp::setup(){
 
@@ -47,8 +44,20 @@ void testApp::setup(){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     //画像データの読込み
+    // サーバ画像参照
+    /*string image_url_1 = '';
+    string image_url_2 = '';
+    string image_url_3 = '';
+    myImage.loadImage(image_url_1);
+    myImage_2.loadImage(image_url_2);
+    myImage_3.loadImage(image_url_3);*/
+    
+    // ローカル画像参照
+    
     myImage.loadImage("komine.jpg");
     myImage_2.loadImage("komine2.jpg");
+    myImage_3.loadImage("komine3.jpg");
+    
 }
 
 
@@ -78,31 +87,28 @@ void testApp::update(){
         for(int i = 0; i < simpleHands.size(); i++){
         
             //for(int j = 0; j < simpleHands[i].fingers.size(); j++){
-            for(int j = 0; j < 2; j++){
+            //for(int j = 0; j < 2; j++){
                 int id = simpleHands[i].fingers[1].id;
                 
                 ofPolyline & polyline = fingerTrails[id];
                 /*
                  * Get the position of the finger.
                  */
-                /*
-                 * ptをqueueに変えたので値の追加方法を変更
-                 */
                 //pt.push(simpleHands[i].fingers[1].pos);
                 pt = simpleHands[i].fingers[1].pos;
                 
                 //if the distance between the last point and the current point is too big - lets clear the line 
                 //this stops us connecting to an old drawing
-                if( polyline.size() && (pt-polyline[polyline.size()-1] ).length() > 50 ){
+                /*if( polyline.size() && (pt-polyline[polyline.size()-1] ).length() > 50 ){
                     polyline.clear(); 
-                }
+                }*/
                 
                 //add our point to our trail
-                polyline.addVertex(pt);
+                //polyline.addVertex(pt);
                 
                 //store fingers seen this frame for drawing
-                fingersFound.push_back(id);
-            }
+                //fingersFound.push_back(id);
+            //}
         }
     }
 
@@ -165,10 +171,12 @@ void testApp::draw(){
     //画像データのビットマップ情報を配列に格納
     unsigned char * pixels = myImage.getPixels();
     unsigned char * pixels_2 = myImage_2.getPixels();
+    unsigned char * pixels_3 = myImage_3.getPixels();
+
     
     // Mask
     int width_of_mask = 960;
-    int height_of_mask = 640;
+    int height_of_mask = 638;
     unsigned char mask[width_of_mask * height_of_mask];
     for (int i=0; i < (width_of_mask * height_of_mask) + 1; i++) {
         // すべてのピクセルを黒に初期化する
@@ -182,136 +190,152 @@ void testApp::draw(){
     /*x.push_back(pt.x);
     y.push_back(pt.y);*/
     
-    additional_pts_pair.first = pt.x;
-    additional_pts_pair.second = pt.y;
-    
-    // ptsの要素数を取得
-    int size_of_pts = pts.size();
-    // 閾値と比較
-    if (size_of_pts > threshold_of_pts) {
-        /*
-        std::cout << "実行！";
-        std::cout << "threshold_of_pts";
-        std::cout << threshold_of_pts;
-        std::cout << "size_of_pts";
-        std::cout << size_of_pts;
-         */
-        pts.pop_back();
-    }
-    // 値追加
-    pts.push_front(additional_pts_pair);
-    
-    /*
-     * 座標の周囲を四角形で白に変更
-     */
-    /*for( iter = pts.begin(); iter != pts.end(); iter++ ){
-        // maskを白に
-        int pt_to_be_changed = width*(*iter).second+(*iter).first;
-        
-        if (pt_to_be_changed > width && pt_to_be_changed < width*height-1-width) {
-            int pixels_near_pt_to_be_changed[] = {
-                pt_to_be_changed - width,
-                pt_to_be_changed -1,
-                pt_to_be_changed,
-                pt_to_be_changed + 1,
-                pt_to_be_changed + width,
-                pt_to_be_changed - width - 1,
-                pt_to_be_changed - width + 1,
-                pt_to_be_changed + width - 1,
-                pt_to_be_changed + width + 1
-            };
-            // 周囲のピクセルも白に
-            int size_of_pixels_near_pt_to_be_changed = sizeof(pixels_near_pt_to_be_changed);
-            for (int i=0;i<size_of_pixels_near_pt_to_be_changed;i++) {
-                mask[pixels_near_pt_to_be_changed[i]] = 1;
-            }
-        }
-        
-        // 2枚目の写真描写
-        int pt_of_hand = width * (*iter).second + (*iter).first;
-        if (mask[pt_of_hand] == 1) {
-            // 指の座標のmaskピクセルが白の場合
-            // ２枚目の画像を持ってくる処理
-            int valueR = pixels_2[j*3 * w + i*3];
-            int valueG = pixels_2[j*3 * w + i*3+1];
-            int valueB = pixels_2[j*3 * w + i*3+2];
-            ofSetColor(valueR, valueG, valueB);
-            ofRect(i, j, 1);
-        }
-    }*/
-    
     
     
     
     if( leap.isFrameNew() && simpleHands.size() != 0 ){ // 手を検知した時
         
+        pair<float, float> additional_pts_pair;
+        additional_pts_pair.first = pt.x;
+        additional_pts_pair.second = pt.y;
+        // ptsの要素数を取得
+        int size_of_pts = pts.size();
+        // 閾値と比較
+        if (size_of_pts > threshold_of_pts) {
+            pts.pop_back();
+        }
+        // 値追加
+        pts.push_front(additional_pts_pair);
+    }
     
     
-    //画像を8ピクセル間隔でスキャン 嘘
-    for (int i = 0; i < w; i++){
-        for (int j = 0; j < h; j++){
-            //ピクセルのRGBの値を取得
-            //if ((x - i)*(x - i)+(y-j)*(y-j) < 100) {
-                /*int valueR = 255;
-                int valueG = 255;
-                int valueB = 255;
-                int valueR = pixels_2[j*3 * w + i*3];
-                int valueG = pixels_2[j*3 * w + i*3+1];
-                int valueB = pixels_2[j*3 * w + i*3+2];
-                ofSetColor(valueR, valueG, valueB);
-                ofCircle(i, j, 1);
-            }*/
+    bool first_flug = true;
+    int current_first;
+    int current_second;
+    int prev_first;
+    int prev_second;
+    
+    int threshold_of_depth = -40;
+
+    for( iter = pts.begin(); iter != pts.end(); iter++ ){
+        
+        if (first_flug) {
+            first_flug = false;
             
-            /*if ((x - i)*(x - i)+(y-j)*(y-j) < 100) {
-                int valueR = 255;
-                int valueG = 255;
-                int valueB = 255;
-                int valueR = pixels_2[j*3 * w + i*3];
-                int valueG = pixels_2[j*3 * w + i*3+1];
-                int valueB = pixels_2[j*3 * w + i*3+2];
-                ofSetColor(valueR, valueG, valueB);
-                ofCircle(i, j, 1);
-            }*/
-            for( iter = pts.begin(); iter != pts.end(); iter++ ){
-                // maskを白に
-                int pt_to_be_changed = width_of_mask*(*iter).second+(*iter).first;
-                
-                if (pt_to_be_changed > width_of_mask && pt_to_be_changed < width_of_mask*height_of_mask-1-width_of_mask) {
-                    int pixels_near_pt_to_be_changed[] = {
-                        pt_to_be_changed - width_of_mask,
-                        pt_to_be_changed -1,
-                        pt_to_be_changed,
-                        pt_to_be_changed + 1,
-                        pt_to_be_changed + width_of_mask,
-                        pt_to_be_changed - width_of_mask - 1,
-                        pt_to_be_changed - width_of_mask + 1,
-                        pt_to_be_changed + width_of_mask - 1,
-                        pt_to_be_changed + width_of_mask + 1
-                    };
-                    // 周囲のピクセルも白に
-                    int size_of_pixels_near_pt_to_be_changed = sizeof(pixels_near_pt_to_be_changed);
-                    for (int i = 0;i < size_of_pixels_near_pt_to_be_changed;i++) {
-                        mask[pixels_near_pt_to_be_changed[i]] = 1;
-                    }
-                }
-                
-                // 2枚目の写真描写
-                int pt_of_hand = width_of_mask * (*iter).second + (*iter).first;
-                if (mask[pt_of_hand] == 1) {
-                    // 指の座標のmaskピクセルが白の場合
-                    // ２枚目の画像を持ってくる処理
-                    int valueR = pixels_2[j*3 * w + i*3];
-                    int valueG = pixels_2[j*3 * w + i*3+1];
-                    int valueB = pixels_2[j*3 * w + i*3+2];
-                    ofSetColor(valueR, valueG, valueB);
-                    ofRect(i, j, 3, 3);
+            current_first = (*iter).first;
+            current_second = (*iter).second;
+            continue;
+        } else {
+            prev_first = current_first;
+            prev_second = current_second;
+            
+            current_first = (*iter).first;
+            current_second = (*iter).second;
+        }
+        
+        int max_f;
+        int min_f;
+        int max_s;
+        int min_s;
+        
+        
+        current_first = round(current_first);
+        prev_first = round(prev_first);
+        current_second = round(current_second);
+        prev_second = round(prev_second);
+        
+        if (current_first > prev_first) {
+            if (current_first < 0) {
+                max_f = 0;
+            } else {
+                max_f = current_first;
+            }
+            if (prev_first < 0) {
+                min_f = 0;
+            } else {
+                min_f = prev_first;
+            }
+        } else {
+            if (prev_first < 0) {
+                max_f = 0;
+            } else {
+                max_f = prev_first;
+            }
+            if (current_first < 0) {
+                min_f = 0;
+            } else {
+                min_f = current_first;
+            }
+        }
+        
+        if (current_second > prev_second) {
+            if (current_second < 0) {
+                max_s = 0;
+            } else {
+                max_s = current_second;
+            }
+            if (prev_second < 0) {
+                min_s = 0;
+            } else {
+                min_s = prev_second;
+            }
+        } else {
+            if (prev_second < 0) {
+                max_s = 0;
+            } else {
+                max_s = prev_second;
+            }
+            if (current_second < 0) {
+                min_s = 0;
+            } else {
+                min_s = current_second;
+            }
+        }
+        
+        for (int j = min_s; j < max_s; j++) {
+            for (int i = min_f; i < max_f; i++) {
+                if (i > 0 && j > 0 && i < w && j < h) {
+                    mask[j*w+i] = 1;
                 }
             }
-            
         }
     }
-        
-    } // 今実験してるやる終わり
+    
+
+    int depth = pt.z;
+    
+        //画像を8ピクセル間隔でスキャン
+        for (int i = 0; i < w; i++){
+            for (int j = 0; j < h; j++){
+                //ピクセルのRGBの値を取得
+                 //for( iter = pts.begin(); iter != pts.end(); iter++ ){
+                    
+                    // 2枚目の写真描写
+                    int pt_of_hand = width_of_mask * j + i;
+                    if (mask[pt_of_hand] == 1) {
+                        // 指の座標のmaskピクセルが白の場合
+                        int valueR;
+                        int valueG;
+                        int valueB;
+                        if (depth > threshold_of_depth) {
+                            // ２枚目の画像を持ってくる処理
+                            valueR = pixels_2[j*3 * w + i*3];
+                            valueG = pixels_2[j*3 * w + i*3+1];
+                            valueB = pixels_2[j*3 * w + i*3+2];
+                        } else {
+                            valueR = pixels_3[j*3 * w + i*3];
+                            valueG = pixels_3[j*3 * w + i*3+1];
+                            valueB = pixels_3[j*3 * w + i*3+2];
+                        }
+                        ofSetColor(valueR, valueG, valueB);
+                        ofCircle(i, j, 1);
+                    }
+                    
+                //}
+                
+            }
+        }
+    
     
     
     // 画像描写
