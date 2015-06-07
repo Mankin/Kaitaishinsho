@@ -90,9 +90,6 @@ void testApp::update(){
                  */
                 //pt.push(simpleHands[i].fingers[1].pos);
                 pt = simpleHands[i].fingers[1].pos;
-                //std::cout << "ptだよ！";
-                //std:cout << pt;
-            
                 
                 //if the distance between the last point and the current point is too big - lets clear the line 
                 //this stops us connecting to an old drawing
@@ -170,10 +167,10 @@ void testApp::draw(){
     unsigned char * pixels_2 = myImage_2.getPixels();
     
     // Mask
-    int width = 960;
-    int height = 640;
-    unsigned char mask[width * height];
-    for (int i=0; i < (width * height) + 1; i++) {
+    int width_of_mask = 960;
+    int height_of_mask = 640;
+    unsigned char mask[width_of_mask * height_of_mask];
+    for (int i=0; i < (width_of_mask * height_of_mask) + 1; i++) {
         // すべてのピクセルを黒に初期化する
         mask[i] = 0;
     }
@@ -192,11 +189,13 @@ void testApp::draw(){
     int size_of_pts = pts.size();
     // 閾値と比較
     if (size_of_pts > threshold_of_pts) {
+        /*
         std::cout << "実行！";
         std::cout << "threshold_of_pts";
         std::cout << threshold_of_pts;
         std::cout << "size_of_pts";
         std::cout << size_of_pts;
+         */
         pts.pop_back();
     }
     // 値追加
@@ -205,10 +204,10 @@ void testApp::draw(){
     /*
      * 座標の周囲を四角形で白に変更
      */
-    for( iter = pts.begin(); iter != pts.end(); iter++ ){
+    /*for( iter = pts.begin(); iter != pts.end(); iter++ ){
         // maskを白に
         int pt_to_be_changed = width*(*iter).second+(*iter).first;
-        // 周囲のピクセルも白に
+        
         if (pt_to_be_changed > width && pt_to_be_changed < width*height-1-width) {
             int pixels_near_pt_to_be_changed[] = {
                 pt_to_be_changed - width,
@@ -221,6 +220,7 @@ void testApp::draw(){
                 pt_to_be_changed + width - 1,
                 pt_to_be_changed + width + 1
             };
+            // 周囲のピクセルも白に
             int size_of_pixels_near_pt_to_be_changed = sizeof(pixels_near_pt_to_be_changed);
             for (int i=0;i<size_of_pixels_near_pt_to_be_changed;i++) {
                 mask[pixels_near_pt_to_be_changed[i]] = 1;
@@ -238,16 +238,16 @@ void testApp::draw(){
             ofSetColor(valueR, valueG, valueB);
             ofRect(i, j, 1);
         }
-    }
+    }*/
     
     
     
     
-    if( leap.isFrameNew() && simpleHands.size() != 0 ){
+    if( leap.isFrameNew() && simpleHands.size() != 0 ){ // 手を検知した時
         
     
     
-    //画像を8ピクセル間隔でスキャン
+    //画像を8ピクセル間隔でスキャン 嘘
     for (int i = 0; i < w; i++){
         for (int j = 0; j < h; j++){
             //ピクセルのRGBの値を取得
@@ -261,7 +261,7 @@ void testApp::draw(){
                 ofSetColor(valueR, valueG, valueB);
                 ofCircle(i, j, 1);
             }*/
-                //std::cout << (*iter).first;
+            
             /*if ((x - i)*(x - i)+(y-j)*(y-j) < 100) {
                 int valueR = 255;
                 int valueG = 255;
@@ -272,14 +272,41 @@ void testApp::draw(){
                 ofSetColor(valueR, valueG, valueB);
                 ofCircle(i, j, 1);
             }*/
-                 //取得したRGB値をもとに、円を描画
-            //取得したピクセルの明るさを、円の半径に対応させている
-            /*ofSetColor(255, 0, 0, 63);
-            ofCircle(440+i, 20+j, 10*valueR/255.0);
-            ofSetColor(0, 255, 0, 63);
-            ofCircle(440+i, 20+j, 10*valueG/255.0);
-            ofSetColor(0, 0, 255, 63);
-            ofCircle(440+i, 20+j, 10*valueB/255.0);*/
+            for( iter = pts.begin(); iter != pts.end(); iter++ ){
+                // maskを白に
+                int pt_to_be_changed = width_of_mask*(*iter).second+(*iter).first;
+                
+                if (pt_to_be_changed > width_of_mask && pt_to_be_changed < width_of_mask*height_of_mask-1-width_of_mask) {
+                    int pixels_near_pt_to_be_changed[] = {
+                        pt_to_be_changed - width_of_mask,
+                        pt_to_be_changed -1,
+                        pt_to_be_changed,
+                        pt_to_be_changed + 1,
+                        pt_to_be_changed + width_of_mask,
+                        pt_to_be_changed - width_of_mask - 1,
+                        pt_to_be_changed - width_of_mask + 1,
+                        pt_to_be_changed + width_of_mask - 1,
+                        pt_to_be_changed + width_of_mask + 1
+                    };
+                    // 周囲のピクセルも白に
+                    int size_of_pixels_near_pt_to_be_changed = sizeof(pixels_near_pt_to_be_changed);
+                    for (int i = 0;i < size_of_pixels_near_pt_to_be_changed;i++) {
+                        mask[pixels_near_pt_to_be_changed[i]] = 1;
+                    }
+                }
+                
+                // 2枚目の写真描写
+                int pt_of_hand = width_of_mask * (*iter).second + (*iter).first;
+                if (mask[pt_of_hand] == 1) {
+                    // 指の座標のmaskピクセルが白の場合
+                    // ２枚目の画像を持ってくる処理
+                    int valueR = pixels_2[j*3 * w + i*3];
+                    int valueG = pixels_2[j*3 * w + i*3+1];
+                    int valueB = pixels_2[j*3 * w + i*3+2];
+                    ofSetColor(valueR, valueG, valueB);
+                    ofRect(i, j, 3, 3);
+                }
+            }
             
         }
     }
