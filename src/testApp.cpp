@@ -15,7 +15,7 @@ deque< pair<float, float> > pts;
 // Create Iterater.
 deque< pair<float, float> >::iterator iter;
 
-int threshold_of_pts = 10;
+int threshold_of_pts = 15;
 
 int window_width;
 int window_height;
@@ -35,9 +35,10 @@ void testApp::setup(){
 
 	/*
     l1.setPosition(200, 300, 50);
-	l2.setPosition(-200, -200, 50);
-     */
-    l1.setPosition(0, 0, 50);
+	l2.setPosition(-200, -200, 50);*/
+    l1.setPosition(200, 300, 800);
+    l2.setPosition(-200, -200, 800);
+    
     //l2.setPosition(<#float px#>, <#float py#>, <#float pz#>)
 
     cam.setOrientation(ofPoint(-20, 0, 0));
@@ -63,8 +64,6 @@ void testApp::setup(){
     */
     
     // ローカル画像参照
-    
-    
     myImage.loadImage("1.jpg");
     myImage_2.loadImage("2.jpg");
     myImage_3.loadImage("3.jpg");
@@ -98,12 +97,9 @@ void testApp::update(){
     
         for (int i = 0; i < simpleHands.size(); i++){
                 int id = simpleHands[i].fingers[1].id;
-                
-                //ofPolyline & polyline = fingerTrails[id];
                 /*
                  * Get the position of the finger.
                  */
-                //pt.push(simpleHands[i].fingers[1].pos);
             pt = simpleHands[i].fingers[1].pos;
             pt.x += 400;
             pt.y = -pt.y;
@@ -318,7 +314,7 @@ void testApp::draw(){
     
     
     
-	ofEnableLighting();
+	ofDisableLighting();
     ofBackgroundGradient(ofColor(90, 90, 90), ofColor(30, 30, 30),  OF_GRADIENT_BAR);
 	
 	ofSetColor(200);
@@ -332,7 +328,7 @@ void testApp::draw(){
 		ofDrawGridPlane(800, 20, false);
 	ofPopMatrix();
 	
-	ofEnableLighting();
+	ofDisableLighting();
 	l1.enable();
 	l2.enable();
 	
