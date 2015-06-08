@@ -33,45 +33,28 @@ void testApp::setup(){
 
 	leap.open(); 
 
-	/*
-    l1.setPosition(200, 300, 50);
-	l2.setPosition(-200, -200, 50);*/
     l1.setPosition(200, 300, 800);
     l2.setPosition(-200, -200, 800);
-    
-    //l2.setPosition(<#float px#>, <#float py#>, <#float pz#>)
 
     cam.setOrientation(ofPoint(-20, 0, 0));
 
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_NORMALIZE);
     
-    //画面の基本設定
     ofBackground(0,0,0);
     ofEnableSmoothing();
-    //画面の混色の設定を加算合成にする
+    
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    //画像データの読込み
-    // サーバ画像参照
-    /*
-    string image_url_1 = "http://160.16.56.118/hd15/rslt/img/main.jpg"; // stringはダブルクォーテーションじゃないとだめ
-    string image_url_2 = "http://160.16.56.118/hd15/rslt/img/1.jpg";
-    string image_url_3 = "http://160.16.56.118/hd15/rslt/img/2.jpg";
-    myImage.loadImage(image_url_1);
-    myImage_2.loadImage(image_url_2);
-    myImage_3.loadImage(image_url_3);
-    */
     
-    // ローカル画像参照
     myImage.loadImage("1.jpg");
     myImage_2.loadImage("2.jpg");
     myImage_3.loadImage("3.jpg");
     titleImage.loadImage("title.jpg");
     
     
-    window_width = ofGetWidth();  // アプリウィンドウの横ピクセル数を返します．
-    window_height = ofGetHeight(); // アプリウィンドウの縦ピクセル数を返します
+    window_width = ofGetWidth();
+    window_height = ofGetHeight();
     
 }
 
@@ -96,7 +79,7 @@ void testApp::update(){
         leap.setMappingZ(-150, 150, -200, 200);
     
         for (int i = 0; i < simpleHands.size(); i++){
-                int id = simpleHands[i].fingers[1].id;
+            int id = simpleHands[i].fingers[1].id;
                 /*
                  * Get the position of the finger.
                  */
@@ -113,15 +96,12 @@ void testApp::update(){
 //--------------------------------------------------------------
 void testApp::draw(){
     
-    //画像の幅と高さを所得
     int w = myImage.width;
     int h = myImage.height;
     
     int offset_x = (window_width - w)/2;
     int offset_y = (window_height - h)/2;
     
-    
-    // タイトルイメージ用
     int t_w = titleImage.width;
     int t_h = titleImage.height;
     
@@ -133,14 +113,9 @@ void testApp::draw(){
     time_t now = time(NULL);
     int time_d = now - time_now;
     if (time_d < 5) {
-        //titleImage.draw(t_offset_x, t_offset_y-150);
         titleImage.draw(0, 0, window_width, window_height);
     }
-    
-    
-    //読み込んだ画像データを画面に描画
 
-    //画像データのビットマップ情報を配列に格納
     unsigned char * pixels = myImage.getPixels();
     unsigned char * pixels_2 = myImage_2.getPixels();
     unsigned char * pixels_3 = myImage_3.getPixels();
@@ -150,40 +125,38 @@ void testApp::draw(){
     int height_of_mask = 640;
     unsigned char mask[width_of_mask * height_of_mask];
     for (int i=0; i < (w * h) + 1; i++) {
-        // すべてのピクセルを黒に初期化する
         mask[i] = 0;
     }
     
-    // 指の座標を取得
     ofSetColor(0, 0, 0);
     ofCircle(pt.x+offset_x, pt.y+offset_y, 10);
     
     ofSetColor(255, 255, 255);
     
     
-    if( leap.isFrameNew() && simpleHands.size() != 0 ){ // 手を検知した時
-        
+    if( leap.isFrameNew() && simpleHands.size() != 0 ){
         pair<float, float> additional_pts_pair;
         additional_pts_pair.first = pt.x;
         additional_pts_pair.second = pt.y;
-        // ptsの要素数を取得
+        
         int size_of_pts = pts.size();
-        // 閾値と比較
+
         if (size_of_pts > threshold_of_pts) {
             pts.pop_back();
         }
-        // 値追加
+
         pts.push_front(additional_pts_pair);
     }
     
+    
+    int threshold_of_depth = -40;
     
     bool first_flug = true;
     int current_first;
     int current_second;
     int prev_first;
     int prev_second;
-    
-    int threshold_of_depth = -40;
+
 
     for( iter = pts.begin(); iter != pts.end(); iter++ ){
         
@@ -272,47 +245,30 @@ void testApp::draw(){
 
     int depth = pt.z;
     
-        //画像を8ピクセル間隔でスキャン
-        for (int i = 0; i < w; i++){
-            for (int j = 0; j < h; j++){
-                //ピクセルのRGBの値を取得
-                 //for( iter = pts.begin(); iter != pts.end(); iter++ ){
-                    
-                    // 2枚目の写真描写
-                    int pt_of_hand = w * j + i;
-                    if (mask[pt_of_hand] == 1) {
-                        // 指の座標のmaskピクセルが白の場合
-                        int valueR;
-                        int valueG;
-                        int valueB;
-                        if (depth > threshold_of_depth) {
-                            // ２枚目の画像を持ってくる処理
-                            valueR = pixels_2[j*3 * w + i*3];
-                            valueG = pixels_2[j*3 * w + i*3+1];
-                            valueB = pixels_2[j*3 * w + i*3+2];
-                        } else {
-                            valueR = pixels_3[j*3 * w + i*3];
-                            valueG = pixels_3[j*3 * w + i*3+1];
-                            valueB = pixels_3[j*3 * w + i*3+2];
-                        }
-                        ofSetColor(valueR, valueG, valueB);
-                        ofCircle(i+offset_x, j+offset_y, 1);
-                    }
-                    
-                //}
-                
+    for (int i = 0; i < w; i++){
+        for (int j = 0; j < h; j++){
+            int pt_of_hand = w * j + i;
+            if (mask[pt_of_hand] == 1) {
+                int valueR;
+                int valueG;
+                int valueB;
+                if (depth > threshold_of_depth) {
+                    valueR = pixels_2[j*3 * w + i*3];
+                    valueG = pixels_2[j*3 * w + i*3+1];
+                    valueB = pixels_2[j*3 * w + i*3+2];
+                } else {
+                    valueR = pixels_3[j*3 * w + i*3];
+                    valueG = pixels_3[j*3 * w + i*3+1];
+                    valueB = pixels_3[j*3 * w + i*3+2];
+                }
+                ofSetColor(valueR, valueG, valueB);
+                ofCircle(i+offset_x, j+offset_y, 1);
             }
         }
+    }
     
-    
-    
-    // 画像描写
-    ofSetColor(255, 255, 255); //おまじない
+    ofSetColor(255, 255, 255);
     myImage.draw(offset_x,offset_y);
-    
-    //myImage_2.draw(100, 20);
-    
-    
     
 	ofDisableLighting();
     ofBackgroundGradient(ofColor(90, 90, 90), ofColor(30, 30, 30),  OF_GRADIENT_BAR);
@@ -347,11 +303,6 @@ void testApp::draw(){
 	}
 	
     l2.disable();
-    
-    // 手のオブジェクト入れてるのはこれ！！！
-    /*for(int i = 0; i < simpleHands.size(); i++){
-        simpleHands[i].debugDraw();
-    }*/
 
 	m1.end();
 	cam.end();
@@ -360,17 +311,6 @@ void testApp::draw(){
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
-    
-    /*
-     * For Reading Image File.
-     */
-    //「x」キーを押すと、画面をキャプチャーする
-    if(key == 'x'){
-        //位置とサイズを指定して、画面をキャプチャー
-        grabbedImage.grabScreen(430,10,420,642);
-        //キャプチャーした画像データを「grabbedImage.png」で保存
-        grabbedImage.saveImage("grabbedImage.png");
-    }
 }
 //--------------------------------------------------------------
 void makeCircle (deque<float> pt_x, deque<float> pt_y, deque<float> pt_z){

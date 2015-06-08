@@ -23,9 +23,7 @@ class testApp : public ofBaseApp{
     /*
      * For Reading Image File.
      */
-    ofImage myImage; //画像ファイルより読みこまれたイメージデータ
-    ofImage grabbedImage; //画面をキャプチャーしたイメージデータ
-    
+    ofImage myImage;
     ofImage myImage_2;
     ofImage myImage_3;
     
